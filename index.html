@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html language="en">
+	<head>
+		<title>Matrix Rain</title>
+		<style type='text/css'>
+			* { margin: 0; padding: 0; }
+			html, body, .container {
+				height: 100%;
+			}
+			body {
+			  background: #000;
+			  color: #99fbc3;
+			}
+			div {
+				font-family: 'Courier New', monospace;
+				display: flex;
+				height: 100%;
+				justify-content: center;
+				align-items: center;
+			}
+			span {
+				display: flex;
+				align-items: center;
+				gap: 2px;
+			}
+			
+			/* blinking text cursor */
+			span::after {
+				content: "";
+				width: 5px;
+				height: 20px;
+				background: #99fbc3;
+				display: inline-block;
+				animation: cursor-blink 1.5s steps(2) infinite;
+			}
+			@keyframes cursor-blink {
+				0% {
+					opacity: 0;
+				}
+			}
+			
+			@keyframes fade-out {
+			  from {
+				opacity: 100%;
+			  }
+			  to {
+				opacity: 0%;
+			  }
+			}
+			
+			canvas {display: block;}	
+		</style>
+	</head>
+	<body>
+		<div>
+			<span id="matrixText"></span>
+		</div>
+		
+		<script type='text/javascript'>
+			var typeIndex = 0;
+			var messageIndex = 0;
+			var messages = [
+				"The Matrix has you...", 
+				"Follow the white rabbit.",
+				"Knock, knock, Neo."
+			]; 
+			
+			var drops = [];
+			var matrixClicks = [];
+			var clickMode = 'diamond';
+			var runMatrix = true;
+			var letters = [
+				'M', 'Ї', 'Љ', 'Њ', 'Ћ', 'Ќ', 'Ѝ', 'Ў', 'Џ', 'Б', 'Г', 'Д', 'Ж', 'И', 'Й', 'Л', 'П', 'Ф', 'Ц', 'Ч', 'Ш', 'Щ', 'Ъ',
+				'Ы', 'Э', 'Ю', 'Я', 'в', 'д', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'п', 'т', 'ф', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы',
+				'ь', 'э', 'ю', 'я', 'ѐ', 'ё', 'ђ', 'ѓ', 'є', 'ї', 'љ', 'њ', 'ћ', 'ќ', 'ѝ', 'ў', 'џ', 'Ѣ', 'ѣ', 'ѧ', 'Ѯ', 'ѱ', 'Ѳ',
+				'ѳ', 'ҋ', 'Ҍ', 'ҍ', 'Ҏ', 'ҏ', 'Ґ', 'ґ', 'Ғ', 'ғ', 'Ҕ', 'ҕ', 'Җ', 'җ', 'Ҙ', 'ҙ', 'Қ', 'қ', 'ҝ', 'ҟ', 'ҡ', 'Ң', 'ң',
+				'Ҥ', 'ҥ', 'ҩ', 'Ҫ', 'ҫ', 'Ҭ', 'ҭ', 'Ұ', 'ұ', 'Ҳ', 'ҳ', 'ҵ', 'ҷ', 'ҹ', 'Һ', 'ҿ', 'Ӂ', 'ӂ', 'Ӄ', 'ӄ', 'ӆ', 'Ӈ', 'ӈ',
+				'ӊ', 'Ӌ', 'ӌ', 'ӎ', 'Ӑ', 'ӑ', 'Ӓ', 'ӓ', 'Ӕ', 'ӕ', 'Ӗ', 'ӗ', 'Ә', 'ә', 'Ӛ', 'ӛ', 'Ӝ', 'ӝ', 'Ӟ', 'ӟ', 'ӡ', 'Ӣ', 'ӣ',
+				'Ӥ', 'ӥ', 'Ӧ', 'ӧ', 'Ө', 'ө', 'Ӫ', 'ӫ', 'Ӭ', 'ӭ', 'Ӯ', 'ӯ', 'Ӱ', 'ӱ', 'Ӳ', 'ӳ', 'Ӵ', 'ӵ', 'Ӷ', 'ӷ', 'Ӹ', 'ӹ', 'Ӻ',
+				'ӽ', 'ӿ', 'Ԁ', 'ԍ', 'ԏ', 'Ԑ', 'ԑ', 'ԓ', 'Ԛ', 'ԟ', 'Ԧ', 'ԧ', 'Ϥ', 'ϥ', 'ϫ', 'ϭ', 'ｩ', 'ｪ', 'ｫ', 'ｬ', 'ｭ', 'ｮ', 'ｯ',
+				'ｰ', 'ｱ', 'ｲ', 'ｳ', 'ｴ', 'ｵ', 'ｶ', 'ｷ', 'ｸ', 'ｹ', 'ｺ', 'ｻ', 'ｼ', 'ｽ', 'ｾ', 'ｿ', 'ﾀ', 'ﾁ', 'ﾂ', 'ﾃ', 'ﾄ', 'ﾅ', 'ﾆ',
+				'ﾇ', 'ﾈ', 'ﾉ', 'ﾊ', 'ﾋ', 'ﾌ', 'ﾍ', 'ﾎ', 'ﾏ', 'ﾐ', 'ﾑ', 'ﾒ', 'ﾓ', 'ﾔ', 'ﾕ', 'ﾖ', 'ﾗ', 'ﾘ', 'ﾙ', 'ﾚ', 'ﾛ', 'ﾜ', 'ﾝ',
+				'ⲁ', 'Ⲃ', 'ⲃ', 'Ⲅ', 'Γ', 'Δ', 'Θ', 'Λ', 'Ξ', 'Π', 'Ѐ', 'Ё', 'Ђ', 'Ѓ', 'Є', 'ⲉ', 'Ⲋ', 'ⲋ', 'Ⲍ', 'ⲍ', 'ⲏ', 'ⲑ', 'ⲓ',
+				'ⲕ', 'ⲗ', 'ⲙ', 'ⲛ', 'Ⲝ', 'ⲝ', 'ⲡ', 'ⲧ', 'ⲩ', 'ⲫ', 'ⲭ', 'ⲯ', 'ⳁ', 'Ⳉ', 'ⳉ', 'ⳋ', 'ⳤ', '⳥', '⳦', '⳨', '⳩', '∀', '∁',
+				'∂', '∃', '∄', '∅', '∆', '∇', '∈', '∉', '∊', '∋', '∌', '∍', '∎', '∏', '∐', '∑', '∓', 'ℇ', 'ℏ', '℥', 'Ⅎ', 'ℷ', '⩫',
+				'⨀', '⨅', '⨆', '⨉', '⨍', '⨎', '⨏', '⨐', '⨑', '⨒', '⨓', '⨔', '⨕', '⨖', '⨗', '⨘', '⨙', '⨚', '⨛', '⨜', '⨝', '⨿', '⩪',
+				];
+			const letterSize = 15;
+			var numColumns;
+			var numRows;
+			
+			var canvas;
+			var context;
+		
+			typeWriter();
+			// startMatrix();
+			
+			function typeWriter() {
+				var text = messages[messageIndex];
+				var matrixTextElement = document.getElementById('matrixText');
+				if (typeIndex == 0 && messageIndex > 0) {
+					matrixTextElement.innerHTML = "";
+					const div = document.querySelector('div');
+					div.style.animation = "";
+				}
+				if (typeIndex < text.length) {
+					matrixTextElement.innerHTML += text.charAt(typeIndex);
+					typeIndex++;
+					setTimeout(typeWriter, 100 + Math.random(100));
+				}
+				else {
+					messageIndex++;
+					typeIndex = 0;
+					window.addEventListener('click', fade);
+				}
+			}
+		
+			function fade() {
+				window.removeEventListener('click', fade);
+				const div = document.querySelector('div')
+				div.style.animation = "fade-out 1s forwards";
+				
+				div.addEventListener('animationend', onFadeEnd);
+			}
+			
+			function onFadeEnd(event) {
+				event.target.removeEventListener('animationend', onFadeEnd);
+				
+				if (messageIndex < messages.length) {
+					typeWriter();
+				} else {
+					startMatrix();
+				}
+			}
+			
+			function startMatrix() {
+				document.querySelector('div').remove();
+				window.onresize = resize;
+				document.addEventListener('keydown', function(event) {
+					if (event.code == 'Space') {
+						runMatrix = !runMatrix;
+					} else if (event.code == 'ControlLeft') {
+						if (clickMode == 'diamond') {
+							clickMode = 'circle';
+						} else {
+							clickMode = 'diamond';
+						}
+					}
+				});
+				
+				canvas = document.createElement('canvas');
+				document.body.append(canvas);
+				context = canvas.getContext('2d');
+				
+				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+				
+				canvas.addEventListener('mousedown', function (e) {
+					onCanvasClick(canvas, e);
+				});
+				
+				numColumns = canvas.width / letterSize;
+				numRows = canvas.height / letterSize;
+				
+				for (var i = 0; i < numColumns; i++) {
+					drops[i] = Math.random() * -numRows;
+				}
+				
+				// draw at 30 FPS
+				setInterval(draw, 33);
+			}
+			
+			function onCanvasClick(canvas, event) {
+				const rect = canvas.getBoundingClientRect();
+				const x = event.clientX - rect.left;
+				const y = event.clientY - rect.top;
+				matrixClicks.push({'x': x, 'y': y, 'radius': 0, 'mode': clickMode});
+			}
+			
+			function draw() {
+				// fade out all existing letters by 10%
+				context.fillStyle = 'rgba(0, 0, 0, .1)';
+				context.fillRect(0, 0, canvas.width, canvas.height);
+				
+				for (var i = 0; i < drops.length; i++) {
+					drawLetter(i, drops[i]);
+					
+					if (drops[i] * letterSize <= canvas.height + letterSize) {
+						if (runMatrix || drops[i] >= 0) {
+							drops[i]++;
+						}
+					} else {
+						drops[i] = Math.floor(Math.random() * -numRows);
+					}
+				}
+				
+				for (i in matrixClicks) {
+					click = matrixClicks[i];
+					var centerX = Math.floor(click.x / letterSize);
+					var centerY = Math.floor(click.y / letterSize);
+					
+					// diamond fill
+					if (click.mode == 'diamond') {
+						var yOffset = 0;
+						var bottomY = 0;
+						for (var x = centerX - click.radius; x <= centerX + click.radius; x++) {
+							drawLetter(x, centerY + yOffset);
+							drawLetter(x, centerY - yOffset);
+							
+							if (x < centerX) {
+								yOffset++;
+							} else {
+								yOffset--;
+							}
+						}
+					}
+					
+					// circle fill
+					if (click.mode == 'circle') {
+						var radiusSquared = click.radius ** 2;
+						var nextRadiusSquared = (click.radius + 1) ** 2;
+						for (var x = centerX - click.radius; x <= centerX + click.radius; x++) {
+							for (var y = centerY - click.radius; y <= centerY + click.radius; y++) {
+								var distSquared = (x - centerX) ** 2 + (y - centerY) ** 2;
+								if (radiusSquared <= distSquared && distSquared < nextRadiusSquared) {
+									drawLetter(x, y);
+								}
+							}						
+						}
+					}
+
+					click.radius++;
+					if (click.radius > numRows * 2 && click.radius > numColumns * 2) {
+						matrixClicks.splice(i, 1);
+					}
+				}
+			}
+			
+			/* Draws a random letter at the (x,y) index of the matrix grid. */
+			function drawLetter(x, y) {
+				var randomLetter = letters[Math.floor(Math.random()*letters.length)];
+				context.fillStyle = '#0f0';
+				context.font = '15px sans-serif';
+				context.fillText(randomLetter, x * letterSize, y * letterSize);
+			}
+			
+			function resize() {
+				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+				numColumns = Math.floor(canvas.width / letterSize);
+				numRows = Math.floor(canvas.height / letterSize);
+				if (numColumns < drops.length) {
+					drops.length = numColumns;
+				} else {
+					for (var i = drops.length; i < numColumns; i++) {
+						drops[i] = Math.random() * -numRows;
+					}
+				}
+			}
+		</script>
+	</body>
+</html>
