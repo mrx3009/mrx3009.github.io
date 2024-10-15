@@ -111,12 +111,12 @@
 				else {
 					messageIndex++;
 					typeIndex = 0;
-					window.addEventListener('mousedown', fade);
+					document.addEventListener('mousedown', fade);
 				}
 			}
 		
 			function fade() {
-				window.removeEventListener('mousedown', fade);
+				document.removeEventListener('mousedown', fade);
 				const div = document.querySelector('div')
 				div.style.animation = "fade-out 1s forwards";
 				
