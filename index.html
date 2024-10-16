@@ -138,7 +138,7 @@
 				window.addEventListener('resize', function() {
 					resize();
 				});
-				window.addEventListener('orientationchange', function() {
+				screen.orientation.addEventListener('change', function() {
 					resize();
 				});
 				document.addEventListener('keydown', function(event) {
