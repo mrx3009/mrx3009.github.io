@@ -139,7 +139,6 @@
 					resize();
 				});
 				screen.orientation.addEventListener('change', function() {
-					alert('orientation change');
 					// delay resize because orientation change fires too early:
 					// https://stackoverflow.com/a/25322717
 					setTimeout(function() { resize(); }, 300);
