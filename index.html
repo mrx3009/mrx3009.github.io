@@ -135,7 +135,12 @@
 			
 			function startMatrix() {
 				document.querySelector('div').remove();
-				window.onresize = resize;
+				window.addEventListener('resize', function() {
+					resize();
+				});
+				window.addEventListener('orientationchange', function() {
+					resize();
+				});
 				document.addEventListener('keydown', function(event) {
 					if (event.code == 'Space') {
 						runMatrix = !runMatrix;
