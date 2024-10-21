@@ -160,19 +160,11 @@
 				document.body.append(canvas);
 				context = canvas.getContext('2d');
 				
-				canvas.width = window.innerWidth;
-				canvas.height = window.innerHeight;
+				resize();
 				
 				canvas.addEventListener('mousedown', function (e) {
 					onCanvasClick(canvas, e);
 				});
-				
-				numColumns = canvas.width / letterSize;
-				numRows = canvas.height / letterSize;
-				
-				for (var i = 0; i < numColumns; i++) {
-					drops[i] = Math.random() * -numRows;
-				}
 				
 				// draw at 30 FPS
 				setInterval(draw, 33);
@@ -255,6 +247,11 @@
 			function resize() {
 				canvas.width = window.innerWidth;
 				canvas.height = window.innerHeight;
+				if (canvas.width == 0) {
+					canvas.width = screen.width;
+					canvas.height = screen.height;
+				}
+				
 				numColumns = Math.floor(canvas.width / letterSize);
 				numRows = Math.floor(canvas.height / letterSize);
 				if (numColumns < drops.length) {
